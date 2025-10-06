@@ -270,3 +270,7 @@ public class MainActivity extends AppCompatActivity{
     }
 }
 EOL
+
+cd ./app/src/main/res
+
+mkdir -p mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi
