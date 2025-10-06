@@ -93,7 +93,7 @@ fi
 echo "Your target sdk version is $APP_TARGET_SDK"
 
 
-read -p "Enter compile sdk version (Default : $APP_COMPILE_SDK): " input_min_sdk
+read -p "Enter compile sdk version (Default : $APP_COMPILE_SDK): " input_compile_sdk
 
 if [ -z "$input_compile_sdk" ]; then
         :  
@@ -270,6 +270,63 @@ public class MainActivity extends AppCompatActivity{
     }
 }
 EOL
+
+cat > "./automate.sh" <<EOL
+#!/bin/bash
+
+APP_PACKAGE="com.$COMPANY_NAME.$APP_NAME"
+MAIN_ACTIVITY=".MainActivity"
+
+build_app() {
+    echo "Building app..."
+    ./gradlew :app:assembleDebug
+    if [ \$? -ne 0 ]; then
+        echo "Build failed!"
+        exit 1
+    fi
+}
+
+install_app() {
+    echo "Installing app on connected device..."
+    adb install -r app/build/outputs/apk/debug/app-debug.apk
+    if [ \$? -ne 0 ]; then
+        echo "Installation failed!"
+        exit 1
+    fi
+}
+
+run_app() {
+    echo "Launching app on device..."
+    adb shell am start -n "\$APP_PACKAGE/\$MAIN_ACTIVITY"
+    if [ \$? -ne 0 ]; then
+        echo "Failed to launch app!"
+        exit 1
+    fi
+}
+
+case "\$1" in
+    build)
+        build_app
+        ;;
+    install)
+        build_app
+        install_app
+        ;;
+    run)
+        build_app
+        install_app
+        run_app
+        ;;
+    *)
+        echo "Usage: ./automate.sh [build|install|run]"
+        exit 1
+        ;;
+esac
+EOL
+
+
+
+chmod +x ./automate.sh
 
 cd ./app/src/main/res
 
